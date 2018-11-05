@@ -12,66 +12,79 @@ import time
 # print_lock = threading.Lock()
 
 #---------------------------------------------------------
-
+host = ''
+serverName = 'socketServer/hliang2'
 #---------------------------------------------------------
-# setting domain and port
-if len(sys.argv) == 2:
-    port = int(sys.argv[1],10)
-else:
-    print 'Invalid arguments. Please retry.'
-    sys.exit()
-# establishing socket
-try:
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print "Socket successfully created"
-except socket.error as err:
-    print "socket creation failed with error %s" %(err)
-# bind socket and listen to port
-s.bind(('',port))
-s.listen(10)
-print 'socket binded to port %s' %(port)
 
-while True:
-    connSocket, addr = s.accept()
-    successMsg = "You've connected to the server"
-    connSocket.send(successMsg)
-    getResponse(connSocket)
-    connSocket.close()
-    print('Connection from %s --%s' % (addr, time.asctime(time.localtime(time.time()))))
-
-# returns a path in the request is a valid GET request
-def getResponse(connSocket):
+def parseRequest(connSocket):
     path = ''
-    l = ''
     f = ''
     statusCode = '400 Bad Request'
-
     request = connSocket.recv(1024)
+    print request
     lines = request.splitlines()
     # parse the first line of the request
     for line in lines:
         words = line.split()
         if words[0] == 'GET' and words[2] == 'HTTP/1.1' and '/' in words[1]:
-            domain,path = words[1].split('/',1)
+            domain, path = words[1].split('/',1)
             path = './' + path
             try:
-                f = open(path,'rb')
+                f = open(path)
                 statusCode = '200 OK'
             except IOError:
                 statusCode = '404 Not Found'
         break
-
-    response = 'HTTP/1.1 $s\r\n\
-                Content-Type: text/html\r\n\
-                Date: $s\r\n\
-                Connection: Closed\r\n\r\n''' %(statusCode,time.asctime(time.localtime(time.time())))
+    return statusCode, f,
+#
+def sendResponse(connSocket):
+    l = ''
+    header = 'HTTP/1.1 %s\r\nDate: %s\r\nServer: %s\r\nContent-Type: text/html\r\nContent-Length: %s\r\n\r\n' %(statusCode, time.asctime(time.localtime(time.time())))
 
     if statusCode == '200 OK':
-        l = f.read(1024)
-        while(l):
-            connSocket.send(l)
-            l = f.read(1024)
+        # body = f.read()
+        body = '<html>\r\n<body>\r\nHello world!\r\n</body>\r\n</html>\r\n'
+        contentLength = len(body)
+    header = 'HTTP/1.1 %s\r\nDate: %s\r\nServer: %s\r\nContent-Type: text/html\r\nContent-Length: %s\r\n\r\n' %(statusCode, time.asctime(time.localtime(time.time())), serverName)
+    connSocket.sendall((header + body).encode('ascii'))
+
+        # for line in f:
+        #     connSocket.send(line)
+        # l = f.readline(1024)
+        # while l != '':
+        #     connSocket.send(l)
+        #     l = f.read(1024)
 
 # def threaded(c):
 #     while True:
 #         request = c.recv(1024)
+
+def Main():
+    # setting domain and port
+    if len(sys.argv) == 2:
+        port = int(sys.argv[1],10)
+    else:
+        print 'Invalid arguments. Please retry.'
+        sys.exit()
+    # establishing socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print "Socket successfully created"
+    except socket.error as err:
+        print "socket creation failed with error %s" %(err)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    # bind socket and listen to port
+    s.bind((host,port))
+    s.listen(10)
+    print 'socket binded to port %s' %(port)
+
+    while True:
+        connSocket, addr = s.accept()
+        successMsg = "You've connected to the server"
+        connSocket.send(successMsg)
+        sendResponse(connSocket)
+        connSocket.close()
+        print('Connection from %s --%s' % (addr, time.asctime(time.localtime(time.time()))))
+
+if __name__ == '__main__':
+    Main()

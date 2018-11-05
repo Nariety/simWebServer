@@ -4,61 +4,80 @@ import socket
 import sys
 import time
 
-#---------------------------------------------------------
-rttFlag = False
-fileReq = False
-#---------------------------------------------------------
-# setting domain and port
-if len(sys.argv) > 3 and sys.argv[1] == '--ttl':
-    rttFlag = True
-    url = sys.argv[2]
-    port = int(sys.argv[3],10)
-elif len(sys.argv) == 3:
-    url = sys.argv[1]
-    port = int(sys.argv[2],10)
-else:
-    print 'Invalid arguments. Please retry.'
-    sys.exit()
+def parseResponse():
+    
 
-if '/' in url:
-    domain, requestURL = url.split('/',1)
-    if requestURL != "":
-        requestURL = '/' + requestURL
-        fileReq = True
-        print 'domain:%s ; requestURL:%s ; port:%s' %(domain,requestURL,port)
-else:
-    domain = url
-    print 'domain:%s'%(domain)
+def Main():
+    #---------------------------------------------------------
+    rttFlag = False
+    fileReq = False
+    #---------------------------------------------------------
+    # setting domain and port
+    if len(sys.argv) > 3 and sys.argv[1] == '--ttl':
+        rttFlag = True
+        url = sys.argv[2]
+        port = int(sys.argv[3],10)
+    elif len(sys.argv) == 3:
+        url = sys.argv[1]
+        port = int(sys.argv[2],10)
+    else:
+        print 'Invalid arguments. Please retry.'
+        sys.exit()
 
-# Get ip address
-try:
-    ip = socket.gethostbyname(domain)
-except socket.gaierror:
-    print "there was an error resolving the host"
-    sys.exit()
+    if '/' in url:
+        domain, requestURL = url.split('/',1)
+        if requestURL != "":
+            requestURL = '/' + requestURL
+            fileReq = True
+            print 'domain:%s ; requestURL:%s ; port:%s' %(domain,requestURL,port)
+    else:
+        domain = url
+        print 'domain:%s'%(domain)
 
-# establishing socket
-try:
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print "Socket successfully created"
-except socket.error as err:
-    print "socket creation failed with error %s" %(err)
-s.connect((ip,port))
+    # Get ip address
+    try:
+        ip = socket.gethostbyname(domain)
+    except socket.gaierror:
+        print "there was an error resolving the host"
+        sys.exit()
 
-# make requests
-if fileReq:
-    request = 'GET %s HTTP/1.1\r\nHost: %s\r\nAccept: text/html,application/xhtml+xml\r\nAccept-Language: en-us,en\r\nAccept-Language: gzip,deflate\r\nConnection: Keep-Alive\r\n\r\n' %(requestURL,domain)
-else:
-    request = 'GET %s HTTP/1.1\r\nAccept: text/html,application/xhtml+xml\r\nAccept-Language: en-us,en\r\nConnection: Keep-Alive\r\n\r\n' %(url)
+    # establishing socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print "Socket successfully created"
+    except socket.error as err:
+        print "socket creation failed with error %s" %(err)
+    s.connect((ip,port))
 
-# send message
-s.sendall(request)
-startTime = time.time()
-# receive message
-recMsg, severAddr = s.recvfrom(1024)
-endTime = time.time()
-print(recMsg)
+    # make requests
+    if fileReq:
+        request = ('GET %s HTTP/1.1\r\n'
+                    'Host: %s:%s\r\n'
+                    'Accept: text/html,application/xhtml+xml\r\n'
+                    'Accept-Language: en-us,en\r\n'
+                    'Accept-Language: gzip,deflate\r\n'
+                    'Connection: Keep-Alive\r\n\r\n') %(requestURL,domain,port)
+    else:
+        request = 'GET %s HTTP/1.1\r\nAccept: text/html,application/xhtml+xml\r\nAccept-Language: en-us,en\r\nConnection: Keep-Alive\r\n\r\n' %(url)
 
-if rttFlag:
-    print('The RTT is: %s seconds' %(endTime - startTime))
-s.close()
+    # send message
+    # s.sendall(request.encode('ascii'))
+    s.sendall(request)
+    startTime = time.time()
+
+    # receive message
+    response, severAddr = s.recvfrom(1024)
+    print response
+
+    while '</html>' not in response:
+        response, serverAddr = s.recvfrom(1024)
+        print response
+
+    endTime = time.time()
+
+    if rttFlag:
+        print('The RTT is: %s seconds' %(endTime - startTime))
+    s.close()
+
+if __name__ == '__main__':
+    Main()
