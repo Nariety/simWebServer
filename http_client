@@ -22,9 +22,13 @@ else:
 
 if '/' in url:
     domain, requestURL = url.split('/',1)
-    fileReq = True
+    if requestURL != "":
+        requestURL = '/' + requestURL
+        fileReq = True
+        print 'domain:%s ; requestURL:%s ; port:%s' %(domain,requestURL,port)
 else:
     domain = url
+    print 'domain:%s'%(domain)
 
 # Get ip address
 try:
@@ -43,21 +47,12 @@ s.connect((ip,port))
 
 # make requests
 if fileReq:
-    request = 'GET %s HTTP/1.1\r\n\
-                Host: %s\r\n\
-                Accept: text/html,application/xhtml+xml\r\n\
-                Accept-Language: en-us,en\r\n\
-                Accept-Language: gzip,deflate\r\n\
-                Connection: Keep-Alive\r\n\r\n' %(domain,requestURL)
+    request = 'GET %s HTTP/1.1\r\nHost: %s\r\nAccept: text/html,application/xhtml+xml\r\nAccept-Language: en-us,en\r\nAccept-Language: gzip,deflate\r\nConnection: Keep-Alive\r\n\r\n' %(requestURL,domain)
 else:
-    request = 'GET %s HTTP/1.1\r\n\
-                Accept: text/html,application/xhtml+xml\r\n\
-                Accept-Language: en-us,en\r\n\
-                Accept-Language: gzip,deflate\r\n\
-                Connection: Keep-Alive\r\n\r\n' %(url)
+    request = 'GET %s HTTP/1.1\r\nAccept: text/html,application/xhtml+xml\r\nAccept-Language: en-us,en\r\nConnection: Keep-Alive\r\n\r\n' %(url)
 
 # send message
-s.send(request)
+s.sendall(request)
 startTime = time.time()
 # receive message
 recMsg, severAddr = s.recvfrom(1024)
