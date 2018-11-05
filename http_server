@@ -5,30 +5,25 @@ Last Modified: 11/04/2018
 '''
 import socket
 import sys
-'''
-host = ''
-port = 8080
-
-sok = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-sok.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-'''
-
-s = socket.socket()
-print 'Socket successfully created'
-
-#port = sys.argv[1]
-port = 12345
-
-s.bind(('',port))
+import requests as req
+#---------------------------------------------------------
+sPort = 7893
+#---------------------------------------------------------
+# establishing socket
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print "Socket successfully created"
+except socket.error as err:
+    print "socket creation failed with error %s" %(err)
+# bind socket and listen to port
+s.bind(('',sPort))
+s.listen(5)
 print 'socket binded to port %s' %(port)
 
-s.listen(5)
-print 'socket is listening'
-
 while True:
-    conn, addr = s.accept()
-    print 'Got connection from', addr
-
-    c.send('Connection successful! You will be redirected shortly')
-    c.close()
+    connSocket, addr = s.accept()
+    msg = connSocket.recv(1024).decode()
+    #recMsg = msg.decode()
+    returnMsg = "You've connected to the server"
+    connSocket.send(returnMsg.encode())
+    connSocket.close()

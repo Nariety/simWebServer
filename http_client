@@ -1,0 +1,30 @@
+# Client
+
+import socket
+import sys
+
+
+# setting domain and port
+domain = sys.argv[1]
+port = sys.argv[2]
+# Get ip address
+try:
+    ip = socket.gethostbyname(domain)
+except socket.gaierror:
+    print "there was an error resolving the host"
+    sys.exit()
+
+# establishing socket
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print "Socket successfully created"
+except socket.error as err:
+    print "socket creation failed with error %s" %(err)
+
+s.connect((ip,port))
+msg = raw_input('Input lowercase sentence:')
+s.sentto(msg.encode())
+
+recMsg, severAddr = s.recvfrom(1024)
+print(recMsg.decode())
+s.close()
