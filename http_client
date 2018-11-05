@@ -2,11 +2,30 @@
 
 import socket
 import sys
+import time
 
-
+#---------------------------------------------------------
+rttFlag = False
+fileReq = False
+#---------------------------------------------------------
 # setting domain and port
-domain = sys.argv[1]
-port = sys.argv[2]
+if len(sys.argv) > 3 and sys.argv[1] == '--ttl':
+    rttFlag = True
+    url = sys.argv[2]
+    port = int(sys.argv[3],10)
+elif len(sys.argv) == 3:
+    url = sys.argv[1]
+    port = int(sys.argv[2],10)
+else:
+    print 'Invalid arguments. Please retry.'
+    sys.exit()
+
+if '/' in url:
+    domain, requestURL = url.split('/',1)
+    fileReq = True
+else:
+    domain = url
+
 # Get ip address
 try:
     ip = socket.gethostbyname(domain)
@@ -20,11 +39,31 @@ try:
     print "Socket successfully created"
 except socket.error as err:
     print "socket creation failed with error %s" %(err)
-
 s.connect((ip,port))
-msg = raw_input('Input lowercase sentence:')
-s.sentto(msg.encode())
 
+# make requests
+if fileReq:
+    request = 'GET %s HTTP/1.1\r\n\
+                Host: %s\r\n\
+                Accept: text/html,application/xhtml+xml\r\n\
+                Accept-Language: en-us,en\r\n\
+                Accept-Language: gzip,deflate\r\n\
+                Connection: Keep-Alive\r\n\r\n' %(domain,requestURL)
+else:
+    request = 'GET %s HTTP/1.1\r\n\
+                Accept: text/html,application/xhtml+xml\r\n\
+                Accept-Language: en-us,en\r\n\
+                Accept-Language: gzip,deflate\r\n\
+                Connection: Keep-Alive\r\n\r\n' %(url)
+
+# send message
+s.send(request)
+startTime = time.time()
+# receive message
 recMsg, severAddr = s.recvfrom(1024)
-print(recMsg.decode())
+endTime = time.time()
+print(recMsg)
+
+if rttFlag:
+    print('The RTT is: %s seconds' %(endTime - startTime))
 s.close()

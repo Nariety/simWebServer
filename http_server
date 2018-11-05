@@ -5,10 +5,21 @@ Last Modified: 11/04/2018
 '''
 import socket
 import sys
-import requests as req
+import time
+# from _thread import *
+# import threading
+#
+# print_lock = threading.Lock()
+
 #---------------------------------------------------------
-sPort = 7893
+
 #---------------------------------------------------------
+# setting domain and port
+if len(sys.argv) == 2:
+    port = int(sys.argv[1],10)
+else:
+    print 'Invalid arguments. Please retry.'
+    sys.exit()
 # establishing socket
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -16,14 +27,36 @@ try:
 except socket.error as err:
     print "socket creation failed with error %s" %(err)
 # bind socket and listen to port
-s.bind(('',sPort))
+s.bind(('',port))
 s.listen(5)
 print 'socket binded to port %s' %(port)
 
 while True:
     connSocket, addr = s.accept()
-    msg = connSocket.recv(1024).decode()
+    # parseRequest(connSocket.recv(1024).decode())
     #recMsg = msg.decode()
     returnMsg = "You've connected to the server"
-    connSocket.send(returnMsg.encode())
+    connSocket.send(returnMsg)
     connSocket.close()
+    print('Connection from %s --%s' % (addr, time.asctime(time.localtime(time.time()))))
+#
+# def parseRequest(request):
+#     lines = request.splitlines()
+#     for line in lines:
+#         words = line.split()
+#         if words[0] == 'GET' and words[2] == 'HTTP/1.1' and '/' in words[1]:
+#             try:
+#                 f = open('')
+#
+#
+# def getResponse():
+#     response = 'HTTP/1.1 $s\r\n\
+#                 Date: \r\n\
+#                 Accept: text/html,application/xhtml+xml\r\n\
+#                 Accept-Language: en-us,en\r\n\
+#                 Accept-Language: gzip,deflate\r\n\
+#                 Connection: Keep-Alive\r\n\r\n''' %(statusCode)
+#
+# def threaded(c):
+#     while True:
+#         request = c.recv(1024)
