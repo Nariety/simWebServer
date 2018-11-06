@@ -17,7 +17,7 @@ import os
 
 #---------------------------------------------------------
 host = ''
-serverName = 'socketServer/hliang2'
+# serverName = 'socketServer/hliang2'
 #---------------------------------------------------------
 
 def getTime():
@@ -56,7 +56,7 @@ def sendResponse(statusCode, f, contentLength, connSocket):
             'Date: %s\r\n'
             'Server: %s\r\n'
             'Content-Type: text/html\r\n'
-            'Content-Length: %s\r\n\r\n') % (statusCode, getTime(), serverName, contentLength)
+            'Content-Length: %s\r\n\r\n') % (statusCode, getTime(), socket.getfqdn(), contentLength)
     connSocket.sendall(header)
 
     payload = ''
