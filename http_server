@@ -35,17 +35,23 @@ def parseRequest(connSocket):
             except IOError:
                 statusCode = '404 Not Found'
         break
-    return statusCode, f,
+    return statusCode, f
 #
-def sendResponse(connSocket):
+def sendResponse(statusCode, f, connSocket):
     l = ''
-    header = 'HTTP/1.1 %s\r\nDate: %s\r\nServer: %s\r\nContent-Type: text/html\r\nContent-Length: %s\r\n\r\n' %(statusCode, time.asctime(time.localtime(time.time())))
-
+    # date = time.asctime(time.localtime(time.time()))
+    date = 'Mon, 05 Nov 2018 18:16:15 GMT'
     if statusCode == '200 OK':
         # body = f.read()
-        body = '<html>\r\n<body>\r\nHello world!\r\n</body>\r\n</html>\r\n'
+        body = 'Hello world!'
         contentLength = len(body)
-    header = 'HTTP/1.1 %s\r\nDate: %s\r\nServer: %s\r\nContent-Type: text/html\r\nContent-Length: %s\r\n\r\n' %(statusCode, time.asctime(time.localtime(time.time())), serverName)
+
+    header = ('HTTP/1.1 %s\r\n'
+            'Date: %s\r\n'
+            'Server: %s\r\n'
+            'Content-Type: text/html\r\n'
+            'Content-Length: %s\r\n\r\n') % (statusCode, date, serverName, contentLength)
+
     connSocket.sendall((header + body).encode('ascii'))
 
         # for line in f:
@@ -82,7 +88,8 @@ def Main():
         connSocket, addr = s.accept()
         successMsg = "You've connected to the server"
         connSocket.send(successMsg)
-        sendResponse(connSocket)
+        status,f = parseRequest(connSocket)
+        sendResponse(status, f, connSocket)
         connSocket.close()
         print('Connection from %s --%s' % (addr, time.asctime(time.localtime(time.time()))))
 

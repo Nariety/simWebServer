@@ -4,13 +4,14 @@ import socket
 import sys
 import time
 
-def parseResponse():
-    
+# def parseResponse():
 
 def Main():
     #---------------------------------------------------------
     rttFlag = False
     fileReq = False
+    exitCount = 10
+    blankCount = 0
     #---------------------------------------------------------
     # setting domain and port
     if len(sys.argv) > 3 and sys.argv[1] == '--ttl':
@@ -67,10 +68,12 @@ def Main():
 
     # receive message
     response, severAddr = s.recvfrom(1024)
+    blankCount = blankCount + 1 if response == '' else 0
     print response
 
-    while '</html>' not in response:
+    while '</html>' not in response and blankCount < exitCount:
         response, serverAddr = s.recvfrom(1024)
+        blankCount = blankCount + 1 if response == '' else 0
         print response
 
     endTime = time.time()
