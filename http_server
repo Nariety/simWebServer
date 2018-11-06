@@ -6,6 +6,7 @@ Last Modified: 11/04/2018
 import socket
 import sys
 import time
+import os
 # from _thread import *
 # import threading
 #
@@ -15,14 +16,22 @@ import time
 host = ''
 serverName = 'socketServer/hliang2'
 #---------------------------------------------------------
-def getDate(cTime):
-    pass
 
+def getTime():
+    return time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
+# parse requests from server
 def parseRequest(connSocket):
     path = ''
     f = ''
+    contentLength = 0
     statusCode = '400 Bad Request'
-    request = connSocket.recv(1024)
+    
+    try:
+        request = connSocket.recv(1024)
+    except socket.timeout as e:
+        print 'Socket timed out. Exiting.'
+        sys.exit()
+
     print request
     lines = request.splitlines()
     # parse the first line of the request
@@ -33,28 +42,48 @@ def parseRequest(connSocket):
             path = './' + path
             try:
                 f = open(path)
+                contentLength = os.stat(path).st_size
                 statusCode = '200 OK'
-            except IOError:
+            except IOError as e:
                 statusCode = '404 Not Found'
         break
-    return statusCode, f
-#
-def sendResponse(statusCode, f, connSocket):
+    return statusCode, f, contentLength
+
+# send responses to client
+def sendResponse(statusCode, f, contentLength, connSocket):
+
     l = ''
+    body = ''
+    contentLength = 0
+
+    # send header
+    try:
+        connSocket.sendall(header)
+    except socket.timeout as e:
+        print 'Socket timed out. Exiting.'
+        sys.exit()
+
     # date = time.asctime(time.localtime(time.time()))
-    date = 'Mon, 05 Nov 2018 18:16:15 GMT'
-    if statusCode == '200 OK':
-        # body = f.read()
+    if statusCode == '200 OK':          # when a file is located
+        # TODO: check for other status code causes
+        # TODO: loop through the file and send
         body = 'Hello world!'
-        contentLength = len(body)
+
+        l = f.read(1024)
+        while l != '':
+
+    elif statusCode == '404 Not Found': # when a file cannot be located
+        body = 'Requested file cannot be located.'
+    else:                               # in another other cases
+        body = 'Invalid request.'
 
     header = ('HTTP/1.1 %s\r\n'
             'Date: %s\r\n'
             'Server: %s\r\n'
             'Content-Type: text/html\r\n'
-            'Content-Length: %s\r\n\r\n') % (statusCode, date, serverName, contentLength)
+            'Content-Length: %s\r\n\r\n') % (statusCode, getTime(), serverName, contentLength)
 
-    connSocket.sendall((header + body).encode('ascii'))
+
 
         # for line in f:
         #     connSocket.send(line)
@@ -84,16 +113,17 @@ def Main():
     # bind socket and listen to port
     s.bind((host,port))
     s.listen(10)
+    s.settimeout(2.0)
     print 'socket binded to port %s' %(port)
 
     while True:
         connSocket, addr = s.accept()
         successMsg = "You've connected to the server"
         connSocket.send(successMsg)
-        status,f = parseRequest(connSocket)
-        sendResponse(status, f, connSocket)
+        status,f, fileSize = parseRequest(connSocket)
+        sendResponse(status, f, fileSize, connSocket)
         connSocket.close()
-        print('Connection from %s --%s' % (addr, time.asctime(time.localtime(time.time()))))
+        print('Connection from %s --%s' % (addr, getTime()))
 
 if __name__ == '__main__':
     Main()

@@ -49,7 +49,7 @@ def Main():
     except socket.error as err:
         print "socket creation failed with error %s" %(err)
     s.connect((ip,port))
-    s.settimeout(1.0)
+    s.settimeout(2.0)
 
     # make requests
     if fileReq:
