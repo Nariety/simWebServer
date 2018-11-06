@@ -1,3 +1,9 @@
+'''
+CS3516 Computer Networks Project 1
+Submitted by Hannan Liang (hliang2@wpi.edu)
+Last Modified: 11/04/2018
+'''
+
 # Client
 
 import socket
@@ -27,13 +33,13 @@ def Main():
 
     if '/' in url:
         domain, requestURL = url.split('/',1)
-        if requestURL != "":
-            requestURL = '/' + requestURL
-            fileReq = True
-            print 'domain:%s ; requestURL:%s ; port:%s' %(domain,requestURL,port)
+        # if requestURL != "":
+        requestURL = '/' + requestURL
+            # fileReq = True
+            # print 'domain:%s ; requestURL:%s ; port:%s' %(domain,requestURL,port)
     else:
         domain = url
-        print 'domain:%s'%(domain)
+        requestURL = '/'
 
     # Get ip address
     try:
@@ -52,15 +58,15 @@ def Main():
     s.settimeout(2.0)
 
     # make requests
-    if fileReq:
-        request = ('GET %s HTTP/1.1\r\n'
-                    'Host: %s:%s\r\n'
-                    'Accept: text/html,application/xhtml+xml\r\n'
-                    'Accept-Language: en-us,en\r\n'
-                    'Accept-Language: gzip,deflate\r\n'
-                    'Connection: Keep-Alive\r\n\r\n') %(requestURL,domain,port)
-    else:
-        request = 'GET %s HTTP/1.1\r\nAccept: text/html,application/xhtml+xml\r\nAccept-Language: en-us,en\r\nConnection: Keep-Alive\r\n\r\n' %(url)
+    # if fileReq:
+    request = ('GET %s HTTP/1.1\r\n'
+                'Host: %s:%s\r\n'
+                'Accept: text/html,application/xhtml+xml\r\n'
+                'Accept-Language: en-us,en\r\n'
+                'Accept-Language: gzip,deflate\r\n'
+                'Connection: Keep-Alive\r\n\r\n') %(requestURL,domain,port)
+    # else:
+    #     request = 'GET %s HTTP/1.1\r\nAccept: text/html,application/xhtml+xml\r\nAccept-Language: en-us,en\r\nConnection: Keep-Alive\r\n\r\n' %(url)
     # send request
     try:
         s.sendall(request)

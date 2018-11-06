@@ -3,6 +3,9 @@ CS3516 Computer Networks Project 1
 Submitted by Hannan Liang (hliang2@wpi.edu)
 Last Modified: 11/04/2018
 '''
+
+# Server
+
 import socket
 import sys
 import time
@@ -25,7 +28,7 @@ def parseRequest(connSocket):
     f = ''
     contentLength = 0
     statusCode = '400 Bad Request'
-    
+
     try:
         request = connSocket.recv(1024)
     except socket.timeout as e:
@@ -33,6 +36,7 @@ def parseRequest(connSocket):
         sys.exit()
 
     print request
+    # TODO: check for other header file of the request
     lines = request.splitlines()
     # parse the first line of the request
     for line in lines:
@@ -51,7 +55,6 @@ def parseRequest(connSocket):
 
 # send responses to client
 def sendResponse(statusCode, f, contentLength, connSocket):
-
     l = ''
     body = ''
     contentLength = 0
@@ -69,8 +72,8 @@ def sendResponse(statusCode, f, contentLength, connSocket):
         # TODO: loop through the file and send
         body = 'Hello world!'
 
-        l = f.read(1024)
-        while l != '':
+        # l = f.read(1024)
+        # while l != '':
 
     elif statusCode == '404 Not Found': # when a file cannot be located
         body = 'Requested file cannot be located.'
@@ -113,15 +116,15 @@ def Main():
     # bind socket and listen to port
     s.bind((host,port))
     s.listen(10)
-    s.settimeout(2.0)
+    # s.settimeout(2.0)
     print 'socket binded to port %s' %(port)
 
     while True:
         connSocket, addr = s.accept()
-        successMsg = "You've connected to the server"
-        connSocket.send(successMsg)
-        status,f, fileSize = parseRequest(connSocket)
-        sendResponse(status, f, fileSize, connSocket)
+        # successMsg = "You've connected to the server"
+        # connSocket.send(successMsg)
+        status, f, contentLength = parseRequest(connSocket)
+        sendResponse(status, f, contentLength, connSocket)
         connSocket.close()
         print('Connection from %s --%s' % (addr, getTime()))
 
