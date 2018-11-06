@@ -3,6 +3,7 @@
 import socket
 import sys
 import time
+import select
 
 # def parseResponse():
 
@@ -11,7 +12,6 @@ def Main():
     rttFlag = False
     fileReq = False
     exitCount = 10
-    blankCount = 0
     #---------------------------------------------------------
     # setting domain and port
     if len(sys.argv) > 3 and sys.argv[1] == '--ttl':
@@ -49,6 +49,7 @@ def Main():
     except socket.error as err:
         print "socket creation failed with error %s" %(err)
     s.connect((ip,port))
+    s.settimeout(1.0)
 
     # make requests
     if fileReq:
@@ -60,21 +61,29 @@ def Main():
                     'Connection: Keep-Alive\r\n\r\n') %(requestURL,domain,port)
     else:
         request = 'GET %s HTTP/1.1\r\nAccept: text/html,application/xhtml+xml\r\nAccept-Language: en-us,en\r\nConnection: Keep-Alive\r\n\r\n' %(url)
+    # send request
+    try:
+        s.sendall(request)
+    except socket.timeout as e:
+        print 'Socket timed out. Exiting.'
+        sys.exit()
 
-    # send message
-    # s.sendall(request.encode('ascii'))
-    s.sendall(request)
     startTime = time.time()
 
+    response = ''
+    blankCount = 0
     # receive message
-    response, severAddr = s.recvfrom(1024)
-    blankCount = blankCount + 1 if response == '' else 0
-    print response
-
-    while '</html>' not in response and blankCount < exitCount:
-        response, serverAddr = s.recvfrom(1024)
+    while '</html>' not in response:
+        try:
+            response, serverAddr = s.recvfrom(1024)
+        except socket.timeout as e:
+            print 'Socket timed out. Exiting.'
+            sys.exit()
         blankCount = blankCount + 1 if response == '' else 0
         print response
+        if blankCount >= exitCount:
+            print 'Too many blank messages received. Socket closing.'
+            break
 
     endTime = time.time()
 
