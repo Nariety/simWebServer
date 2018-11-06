@@ -29,13 +29,9 @@ def parseRequest(connSocket):
     contentLength = 0
     statusCode = '400 Bad Request'
 
-    try:
-        request = connSocket.recv(1024)
-    except socket.timeout as e:
-        print 'Socket timed out. Exiting.'
-        sys.exit()
-
+    request = connSocket.recv(1024)
     print request
+
     # TODO: check for other header file of the request
     lines = request.splitlines()
     # parse the first line of the request
@@ -55,37 +51,27 @@ def parseRequest(connSocket):
 
 # send responses to client
 def sendResponse(statusCode, f, contentLength, connSocket):
-    l = ''
-    body = ''
-    contentLength = 0
-
     # send header
-    try:
-        connSocket.sendall(header)
-    except socket.timeout as e:
-        print 'Socket timed out. Exiting.'
-        sys.exit()
-
-    # date = time.asctime(time.localtime(time.time()))
-    if statusCode == '200 OK':          # when a file is located
-        # TODO: check for other status code causes
-        # TODO: loop through the file and send
-        body = 'Hello world!'
-
-        # l = f.read(1024)
-        # while l != '':
-
-    elif statusCode == '404 Not Found': # when a file cannot be located
-        body = 'Requested file cannot be located.'
-    else:                               # in another other cases
-        body = 'Invalid request.'
-
     header = ('HTTP/1.1 %s\r\n'
             'Date: %s\r\n'
             'Server: %s\r\n'
             'Content-Type: text/html\r\n'
             'Content-Length: %s\r\n\r\n') % (statusCode, getTime(), serverName, contentLength)
+    connSocket.sendall(header)
 
+    payload = ''
+    # date = time.asctime(time.localtime(time.time()))
+    if statusCode == '200 OK':          # when a file is located
+        # TODO: check for other status code causes
+        # TODO: loop through the file and send
+        payload = f.read(1024)
+        while payload != '':
+            connSocket.sendall(payload)
+            payload = f.read(1024)
+    elif statusCode == '404 Not Found': # when a file cannot be located
+        payload = 'Requested file cannot be located.'
+    else:                               # in another other cases
+        payload = 'Invalid request.'
 
 
         # for line in f:
