@@ -16,5 +16,4 @@ This is a class project for CS3516 at WPI. This project aims to implement a serv
     * the url is the resource (currently only support html) that you want to download. For instance, http://hibou.cs.wpi.edu/~kven/courses/CS3516-B18/home.html
     * the port number is specified by you. For instance, port 7893.
 4. the client will then download the html file and print out the whole file in the terminal.
-
 _note_ there are alternative ways to run this program, this is only one of the ways.
