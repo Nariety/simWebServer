@@ -53,7 +53,6 @@ def sendResponse(statusCode, f, contentLength, c):
             'Content-Type: text/html\r\n'
             'Content-Length: %s\r\n\r\n') % (statusCode, getTime(), socket.getfqdn(), contentLength)
     c.sendall(header)
-
     payload = ''
     if statusCode == '200 OK':          # when a file is located
         payload = f.read(1024)
@@ -63,8 +62,10 @@ def sendResponse(statusCode, f, contentLength, c):
         f.close()
     elif statusCode == '404 Not Found': # when a file cannot be located
         payload = 'Requested file cannot be located.'
+        c.sendall(payload)
     else:                               # in another other cases
         payload = 'Invalid request.'
+        c.sendall(payload)
 
 # thread fuction
 def threaded(c):
