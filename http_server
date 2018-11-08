@@ -10,29 +10,24 @@ import socket
 import sys
 import time
 import os
-# from _thread import *
-# import threading
-#
-# print_lock = threading.Lock()
+import threading
+import thread
 
 #---------------------------------------------------------
 host = ''
 # serverName = 'socketServer/hliang2'
+# print_lock = threading.Lock()
 #---------------------------------------------------------
 
 def getTime():
     return time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
 # parse requests from server
-def parseRequest(connSocket):
+def parseRequest(c):
     path = ''
     f = ''
     contentLength = 0
     statusCode = '400 Bad Request'
-
-    request = connSocket.recv(1024)
-    print request
-
-    # TODO: check for other header file of the request
+    request = c.recv(1024)
     lines = request.splitlines()
     # parse the first line of the request
     for line in lines:
@@ -50,40 +45,32 @@ def parseRequest(connSocket):
     return statusCode, f, contentLength
 
 # send responses to client
-def sendResponse(statusCode, f, contentLength, connSocket):
+def sendResponse(statusCode, f, contentLength, c):
     # send header
     header = ('HTTP/1.1 %s\r\n'
             'Date: %s\r\n'
             'Server: %s\r\n'
             'Content-Type: text/html\r\n'
             'Content-Length: %s\r\n\r\n') % (statusCode, getTime(), socket.getfqdn(), contentLength)
-    connSocket.sendall(header)
+    c.sendall(header)
 
     payload = ''
-    # date = time.asctime(time.localtime(time.time()))
     if statusCode == '200 OK':          # when a file is located
-        # TODO: check for other status code causes
-        # TODO: loop through the file and send
         payload = f.read(1024)
         while payload != '':
-            connSocket.sendall(payload)
+            c.sendall(payload)
             payload = f.read(1024)
+        f.close()
     elif statusCode == '404 Not Found': # when a file cannot be located
         payload = 'Requested file cannot be located.'
     else:                               # in another other cases
         payload = 'Invalid request.'
 
-
-        # for line in f:
-        #     connSocket.send(line)
-        # l = f.readline(1024)
-        # while l != '':
-        #     connSocket.send(l)
-        #     l = f.read(1024)
-
-# def threaded(c):
-#     while True:
-#         request = c.recv(1024)
+# thread fuction
+def threaded(c):
+    status, f, contentLength = parseRequest(c)
+    sendResponse(status, f, contentLength, c)
+    c.close()
 
 def Main():
     # setting domain and port
@@ -106,13 +93,16 @@ def Main():
     print 'socket binded to port %s' %(port)
 
     while True:
-        connSocket, addr = s.accept()
-        # successMsg = "You've connected to the server"
-        # connSocket.send(successMsg)
-        status, f, contentLength = parseRequest(connSocket)
-        sendResponse(status, f, contentLength, connSocket)
-        connSocket.close()
-        print('Connection from %s --%s' % (addr, getTime()))
+        c, addr = s.accept()
+        # lock acquired by client
+        # print_lock.acquire()
+        # Start a new thread and return its identifier
+        try:
+            thread.start_new_thread(threaded, (c,))
+        except:
+            print 'Error: unable to start thread'
+        print 'Connection from %s --%s' % (addr, getTime())
+    s.close()
 
 if __name__ == '__main__':
     Main()

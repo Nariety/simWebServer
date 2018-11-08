@@ -11,7 +11,9 @@ import sys
 import time
 import select
 
-# def parseResponse():
+def getTimestamp():
+    # return time.strftime("%a,%d%b%Y@%H%M%S", time.gmtime())
+    return time.strftime("%H%M%S", time.gmtime())
 
 def Main():
     #---------------------------------------------------------
@@ -78,6 +80,13 @@ def Main():
 
     response = ''
     blankCount = 0
+    if requestURL == '/':
+        requestURL = requestURL + 'index.html'
+    elif requestURL[len(requestURL)-1] == '/':
+        requestURL = request[:len(requestURL)]
+
+    print 'requested URL is: ' + requestURL
+    saveFile = open(getTimestamp() + requestURL.rsplit('/',1)[1],'w')
     # receive message
     while '</html>' not in response:
         try:
@@ -86,11 +95,14 @@ def Main():
             print 'Socket timed out. Exiting.'
             sys.exit()
         blankCount = blankCount + 1 if response == '' else 0
+        # print response
+        saveFile.write(response)
         print response
         if blankCount >= exitCount:
             print 'Too many blank messages received. Socket closing.'
             break
 
+    saveFile.close()
     endTime = time.time()
 
     if rttFlag:
