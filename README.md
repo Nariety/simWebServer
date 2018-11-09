@@ -1,4 +1,5 @@
 # simWebServer
+**Written by Hannan Liang (hliang2 at wpi.edu)**
 This is a class project for CS3516 at WPI. This project aims to implement a server and a client using socket programming. The server can be deployed and accessed via the client or any browser. The client can download any resources supported by HTTP via the networks.
 
 ## How to run
