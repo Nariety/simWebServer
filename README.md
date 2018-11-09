@@ -31,3 +31,4 @@ Example command to run the client:
 * server is binded to localhost (127.0.0.1) with a port specified by the user.
 * client is set to time out if the connection is hanged for more than 2 seconds.
 * client is set to terminate if the client receives consecutive 10 blank responses.
+* the `http_server` and `http_client` files were not saved in `.py` format
