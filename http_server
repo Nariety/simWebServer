@@ -4,8 +4,6 @@ Submitted by Hannan Liang (hliang2@wpi.edu)
 Last Modified: 11/04/2018
 '''
 
-# Server
-
 import socket
 import sys
 import time
@@ -39,7 +37,7 @@ def parseRequest(c):
                 f = open(path)
                 contentLength = os.stat(path).st_size
                 statusCode = '200 OK'
-            except IOError as e:
+            except IOError:
                 statusCode = '404 Not Found'
         break
     return statusCode, f, contentLength
@@ -84,8 +82,8 @@ def Main():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print "Socket successfully created"
-    except socket.error as err:
-        print "socket creation failed with error %s" %(err)
+    except socket.error:
+        print "socket creation failed with error"
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # bind socket and listen to port
     s.bind((host,port))

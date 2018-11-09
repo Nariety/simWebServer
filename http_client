@@ -66,6 +66,7 @@ def Main():
                 'Accept-Language: en-us,en\r\n'
                 'Accept-Language: gzip,deflate\r\n'
                 'Connection: Keep-Alive\r\n\r\n') %(requestURL,domain,port)
+                
     try:
         s.sendall(request)
     except socket.timeout as e:
