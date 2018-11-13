@@ -30,7 +30,7 @@ def Main():
         url = sys.argv[1].replace('http://','')
         port = int(sys.argv[2],10)
     else:
-        print 'Invalid arguments. Please retry.'
+        print 'Invalid or missing arguments. Please retry.'
         sys.exit()
 
     if '/' in url:
@@ -66,7 +66,7 @@ def Main():
                 'Accept-Language: en-us,en\r\n'
                 'Accept-Language: gzip,deflate\r\n'
                 'Connection: Keep-Alive\r\n\r\n') %(requestURL,domain,port)
-                
+
     try:
         s.sendall(request)
     except socket.timeout as e:
