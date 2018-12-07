@@ -13,7 +13,7 @@ Example command to run the server:
 
 `python http_server 7890`
 
-####Client
+### Client
 1. Open up a terminal
 2. `cd` into `simpleWebServer`
 3. type in terminal `python http_client <optional flag> <url> <port number>`, where
